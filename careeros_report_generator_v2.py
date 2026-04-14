@@ -737,13 +737,15 @@ def build_report(data, output_path):
 
     story.append(Spacer(1, 10))
 
-    # V2P2 coaching tip
-    story.append(coaching_tip(
+    # V2P2 coaching tip — wrapped with KeepTogether so it stays on the same page as the transparency box
+    # and does NOT orphan onto its own near-empty page
+    vp2_tip = coaching_tip(
         "HOW TO USE YOUR V\u00b2P\u00b2 SCORES",
         "Focus on the pillar with the lowest score first. A 10 point improvement in your weakest pillar "
         "has 3x more impact on career outcomes than a 10 point improvement in your strongest. "
         "This is the leverage principle behind the V\u00b2P\u00b2 Method\u2122.",
-        S, dark=True))
+        S, dark=True)
+    story.append(KeepTogether([vp2_tip, Spacer(1, 4)]))
 
     story.append(PageBreak())
 
@@ -1578,9 +1580,9 @@ SAMPLE_DATA = {
     "resources": [
         {"category": "BOOKS AND FRAMEWORKS (matched to your skill gaps)",
          "items": [
-            {"name": "The Trusted Advisor by David Maister", "why": "Directly addresses your Consulting Fit score. The framework for building client trust is essential for fractional work.", "cost": "$18 / Free summary online"},
-            {"name": "Building a StoryBrand by Donald Miller", "why": "Your Positioning score (70) needs a tighter narrative. This book gives you the exact framework.", "cost": "$16"},
-            {"name": "The Pathless Path by Paul Millerd", "why": "Written for professionals leaving traditional careers for portfolio paths. Matches your Strategic Builder archetype.", "cost": "$15"},
+            {"name": "Thinking, Fast and Slow by Daniel Kahneman", "why": "Career transitions are full of cognitive traps \u2014 anchoring, loss aversion, sunk cost. Kahneman's framework helps you make better decisions under uncertainty and pressure.", "cost": "$16"},
+            {"name": "The Almanack of Naval Ravikant by Eric Jorgenson", "why": "Naval's framework on specific knowledge and leverage is the blueprint for transitioning from employee to portfolio career. Required reading for anyone building fractional or consulting income.", "cost": "Free at navalmanack.com"},
+            {"name": "The Psychology of Money by Morgan Housel", "why": "Career transitions are financial decisions disguised as identity decisions. Housel will help you separate the two and make clearer choices about income, risk, and runway.", "cost": "$15"},
          ]},
         {"category": "COURSES AND CERTIFICATIONS (matched to your career path)",
          "items": [
