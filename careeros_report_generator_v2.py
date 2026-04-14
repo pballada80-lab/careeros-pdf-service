@@ -135,6 +135,23 @@ class ScoreBarH(Flowable):
 
 
 # ============================================================================
+# TEXT SANITIZER — fix bare & that would confuse ReportLab's XML paragraph parser
+# ============================================================================
+import re as _re
+
+def sanitize_text(text):
+    """Escape bare & characters that are not already part of an HTML entity.
+    ReportLab's Paragraph parser treats text as XML, so a bare & (e.g. in R&D)
+    causes a parse error or renders as 'R&D;' with a stray semicolon.
+    This replaces every & that is NOT followed by a valid entity reference with &amp;.
+    """
+    if not isinstance(text, str):
+        return text
+    # Replace & not followed by an entity name + semicolon (e.g. &amp; &lt; &gt; &#123;)
+    return _re.sub(r'&(?!(?:[a-zA-Z]+|#[0-9]+|#x[0-9a-fA-F]+);)', '&amp;', text)
+
+
+# ============================================================================
 # STYLES
 # ============================================================================
 
@@ -408,10 +425,22 @@ class ReportDoc(BaseDocTemplate):
         BaseDocTemplate.__init__(self, filename, **kw)
 
 
+def _sanitize_data(obj):
+    """Recursively sanitize all string values in a data structure."""
+    if isinstance(obj, str):
+        return sanitize_text(obj)
+    elif isinstance(obj, dict):
+        return {k: _sanitize_data(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_sanitize_data(item) for item in obj]
+    return obj
+
+
 def build_report(data, output_path):
+    # Sanitize all LLM-generated text to fix bare & encoding (e.g. R&D -> R&amp;D)
+    data = _sanitize_data(data)
     S = make_styles()
     CW = 512  # content width
-
     doc = ReportDoc(output_path, user_data=data, pagesize=letter,
         leftMargin=50, rightMargin=50, topMargin=52, bottomMargin=50)
 
@@ -523,7 +552,7 @@ def build_report(data, output_path):
 
     rows = [[Paragraph("FINDING", S['th']), Paragraph("INSIGHT", S['th'])]]
     for i, f in enumerate(findings, 1):
-        rows.append([Paragraph(f"0{i}", S['fnum']), Paragraph(f, S['body'])])
+        rows.append([Paragraph(f"0{i}", S['fnum']), Paragraph(sanitize_text(f), S['body'])])
 
     ft = Table(rows, colWidths=[42, CW - 52])
     ft.setStyle(TableStyle([
